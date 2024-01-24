@@ -1,0 +1,11 @@
+package org.example.createfile.repository;
+
+import org.example.createfile.model.CFDI_use;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+public interface CFDIRepository extends JpaRepository<CFDI_use, String> {
+
+    @Query(value = "SELECT * FROM dbmaster.CFDI_use cc WHERE cc.CFDI_use_id =:cfdi " ,nativeQuery = true)
+    CFDI_use usoCFDI(String cfdi);
+}
