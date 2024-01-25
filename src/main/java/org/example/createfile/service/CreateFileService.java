@@ -10,6 +10,7 @@ import org.example.createfile.util.ParserFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Random;
 
 
@@ -26,16 +27,19 @@ public class CreateFileService {
     CuentaContableRepository cuentaContableRepository;
     @Autowired
     CFDIRepository cfdiRepository;
+    @Autowired
+    MethodOfPaymentRepository methodOfPaymentRepository;
 
 
     public CreateFileService() {
     }
 
-
-    public CreateFileService(CreateFileRepository createFileRepository, ClaveProductoServRepository claveProductoServRepository, CuentaContableRepository cuentaContableRepository) {
+    public CreateFileService(CreateFileRepository createFileRepository, ClaveProductoServRepository claveProductoServRepository, CuentaContableRepository cuentaContableRepository, CFDIRepository cfdiRepository, MethodOfPaymentRepository methodOfPaymentRepository) {
         this.createFileRepository = createFileRepository;
         this.claveProductoServRepository = claveProductoServRepository;
         this.cuentaContableRepository = cuentaContableRepository;
+        this.cfdiRepository = cfdiRepository;
+        this.methodOfPaymentRepository = methodOfPaymentRepository;
     }
 
     public Regimen getRegimens(String regimen) {
@@ -52,17 +56,22 @@ public class CreateFileService {
         Random rand = new Random();
 
         int rand_int1 = rand.nextInt(1000000000);
-        System.out.println(rand_int1);
 
         ObjFile objFile = ParserFile.getParse(fileName);
+        //Regimen regimen = getRegimens(objFile.getPolicyObj().getRegimen());
 
-        //System.out.println("CFDI -- " + cfdiRepository.usoCFDI(objFile.getPolicyObj().getUsoCFDI().toString()));
-        Regimen regimen = getRegimens(objFile.getPolicyObj().getRegimen());
-        //System.out.println("regimen - " + regimen.toString());
         ClaveProductoServ claveProductoServ = getClaveProductoService(objFile.getPolicyObj().getClaveProdServ());
-        CuentaContable cuentaContable = cuentaContableRepository.getCuantaContable(claveProductoServ.getCuenta_contable());
-        //System.out.println("cuenta -  " + cuentaContable.toString());
-        CreateFilePDF.makeFile(objFile, rand_int1);
+        List<CuentaContable> cuentaContable = cuentaContableRepository.getCuantaContable(claveProductoServ.getCuenta_contable());
+
+        //method payment (Abono)
+        objFile.setCuenta_method(methodOfPaymentRepository.getCuantaContable(objFile.getTypeOfPayment()));
+        objFile.setDescription_methods(cuentaContableRepository.getCuantaContableMethod(objFile.getCuenta_method()));
+
+        // (Cargo)
+         objFile.setTax_id(methodOfPaymentRepository.getCuentaContableByTax("002"));
+         objFile.setTax_description(cuentaContableRepository.getCuantaContableTax(objFile.getTax_id()));
+
+        CreateFilePDF.makeFile(objFile, rand_int1, cuentaContable);
 
         return true;
     }

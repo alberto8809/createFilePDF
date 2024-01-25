@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParserFile {
-    private static final String PATH = "/Users/marioalberto/Desktop/out/";
+    private static final String PATH = "/";
 
     public ParserFile() {
     }
@@ -37,11 +37,16 @@ public class ParserFile {
             values.setTotalAmount(total.getAttribute("Total"));
 
             Element date = doc.getDocumentElement();
+            //System.out.println(date.getAttribute("Fecha"));
             String currentDate = date.getAttribute("Fecha");
 
 
+
             Element payment = doc.getDocumentElement();
+            String typeOfPayment = payment.getAttribute("FormaPago");
             Element comprobante = doc.getDocumentElement();
+
+            // String typeOf = comprobante.getAttribute("TipoDeComprobante");
 
             Element method = doc.getDocumentElement();
             String methodPayment = method.getAttribute("MetodoPago");
@@ -55,17 +60,22 @@ public class ParserFile {
 
             NodeList datoCli = comprobanteElement.getElementsByTagName("cfdi:Receptor");
             Element cliente = (Element) datoCli.item(0);
+            //System.out.println(" cliente --- > "+cliente.getAttribute("Nombre"));
             String cli = cliente.getAttribute("Nombre");
 
             String typeOf = null;
+            //System.out.println(methodPayment + rEgr.getAttribute("Nombre") +cli);
             if (methodPayment.equals("PUE") && rEgr.getAttribute("Nombre").equals(cli)) {
                 typeOf = "Egreso";
+                //System.out.println(" ---> Egreso");
             } else if (methodPayment.equals("PPD") && rEgr.getAttribute("Nombre").equals(cli)) {
                 typeOf = "Diario";
+                //System.out.println("---> Diario");
             }
 
+
             if (comprobante.getAttribute("TipoDeComprobante").equals("I")) {
-                System.out.println("inside I");
+                // System.out.println("inside I");
                 NodeList impe = comprobanteElement.getElementsByTagName("cfdi:Impuestos");
                 Element ime = (Element) impe.item(impe.getLength() - 1);
                 System.out.println(ime.getAttribute("TotalImpuestosTrasladados").isEmpty() ? "0" : ime.getAttribute("TotalImpuestosTrasladados"));
@@ -74,7 +84,7 @@ public class ParserFile {
                 NodeList rgm = comprobanteElement.getElementsByTagName("cfdi:Emisor");
                 Element rgim = (Element) rgm.item(0);
                 String regimen = rgim.getAttribute("RegimenFiscal");
-                System.out.println(regimen);
+                //System.out.println(regimen);
 
 
             }
@@ -102,7 +112,7 @@ public class ParserFile {
             Element useCFDI = (Element) receptor.item(0);
             values.setUsoCFDI(useCFDI.getAttribute("UsoCFDI"));
 
-            System.out.println(values.getUsoCFDI());
+            // System.out.println(values.getUsoCFDI());
 
 
             //"------------- Concepto ----------------
@@ -149,7 +159,11 @@ public class ParserFile {
             Element uudi = (Element) timbre.item(0);
             values.setTimbreFiscalDigital_UUID(uudi.getAttribute("UUID"));
 
-            return new ObjFile(values, FileName, companyName, cli, currentDate.substring(0, 10), typeOf);
+
+            //"------------- Return the object  ----------------
+
+            return new ObjFile(values, FileName, companyName, cli, currentDate.substring(0, 10), typeOf, typeOfPayment);
+
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
